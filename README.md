@@ -1,72 +1,45 @@
-## demo app - developing with Docker
+## demo app - Building our own Docker Image
 
-This demo app shows a simple user profile app set up using 
-- index.html with pure js and css styles
-- nodejs backend with express module
-- mongodb for data storage
+### Below are the steps to build a Docker image for a Node.js application:
 
-All components are docker-based
+Step 1: Create a new file named Dockerfile in the project directory with the following contents:
 
-### With Docker
+        FROM node:13-alpine
 
-#### To start the application
+    ENV MONGO_DB_USERNAME=admin \
+        MONGO_DB_PWD=password
 
-Step 1: Create docker network
+    RUN mkdir -p /home/app
 
-    docker network create mongo-network 
+    COPY ./app /home/app
 
-Step 2: start mongodb 
+    # set default dir so that next commands executes in /home/app dir
+    WORKDIR /home/app
 
-    docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password --name mongodb --net mongo-network mongo    
+    # will execute npm install in /home/app because of WORKDIR
+    RUN npm install
 
-Step 3: start mongo-express
+    # no need for /home/app/server.js because of WORKDIR
+    CMD ["node", "server.js"]
+   
+Step 2: This Dockerfile specifies that we will use the official Node.js image from Docker Hub as our base image, set the working directory to /app, copy the package.json and package-lock.json files to the working directory and install dependencies. Then, copy the rest of the application code to the working directory, expose port 3000 for the application to listen on, and start the application with npm start.
+
+Note: Make sure your Node.js application code is located in the same directory as the Dockerfile.
+
+Step 3: Build the Docker image by running the following command in the terminal:
+
+    docker build -t my-app:1.0 .
+
+Step 4: This will build a new Docker image with the name "my-app:1.0" using the Dockerfile in the current directory (.).
+
+Step 5: After the build process completes successfully, you can run the Docker image by running the following command in the terminal:
+
+    docker run my-app:1.0
     
-    docker run -d -p 8081:8081 -e ME_CONFIG_MONGODB_ADMINUSERNAME=admin -e ME_CONFIG_MONGODB_ADMINPASSWORD=password --net mongo-network --name mongo-express -e ME_CONFIG_MONGODB_SERVER=mongodb mongo-express   
+ This will start a new Docker container using the image we just built and map port 3000 in the container to port 3000 on your local machine. You should now be able to access your Node.js application by visiting http://localhost:3000 in your web browser.
 
-_NOTE: creating docker-network in optional. You can start both containers in a default network. In this case, just emit `--net` flag in `docker run` command_
+That's it! You have now successfully built a Docker image for your Node.js application.
 
-Step 4: open mongo-express from browser
 
-    http://localhost:8081
 
-Step 5: create `user-account` _db_ and `users` _collection_ in mongo-express
-
-Step 6: Start your nodejs application locally - go to `app` directory of project 
-
-    cd app
-    npm install 
-    node server.js
-    
-Step 7: Access you nodejs application UI from browser
-
-    http://localhost:3000
-
-### With Docker Compose
-
-#### To start the application
-
-Step 1: start mongodb and mongo-express
-
-    docker-compose -f docker-compose.yaml up
-    
-_You can access the mongo-express under localhost:8080 from your browser_
-    
-Step 2: in mongo-express UI - create a new database "my-db"
-
-Step 3: in mongo-express UI - create a new collection "users" in the database "my-db"       
-    
-Step 4: start node server 
-
-    cd app
-    npm install
-    node server.js
-    
-Step 5: access the nodejs application from browser 
-
-    http://localhost:3000
-
-#### To build a docker image from the application
-
-    docker build -t my-app:1.0 .       
-    
-The dot "." at the end of the command denotes location of the Dockerfile.
+  
