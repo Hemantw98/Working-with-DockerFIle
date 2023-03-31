@@ -1,4 +1,4 @@
-## demo app - Building our own Docker Image
+## Building our own Docker Image
 
 ### Below are the steps to build a Docker image for a Node.js application:
 
